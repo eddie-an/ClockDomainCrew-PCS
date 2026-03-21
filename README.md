@@ -1,4 +1,4 @@
-# ClockDomainCrew – 10G Ethernet MAC + PCS
+# ClockDomainCrew – 10G Ethernet PCS
 
 This repository contains a hardware implementation of a 10 Gigabit Ethernet Physical Coding Sublayer (PCS) written in Chisel.
 
