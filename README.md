@@ -1,24 +1,106 @@
 # ClockDomainCrew – 10G Ethernet PCS
-
-This repository contains a hardware implementation of a 10 Gigabit Ethernet Physical Coding Sublayer (PCS) written in Chisel.
-
-The Media Access Control (MAC) is provided in [this repo](https://github.com/shreosidebnath/ClockDomainCrew)
-
-The project was developed as a capstone design project and implements the digital logic required to transmit and receive Ethernet frames using a 10GBASE-R style architecture.
-
-The design converts Ethernet frames from the MAC layer into encoded data suitable for high-speed serial transmission and performs the reverse operation on receive.
+A high-performance, parameterized 10 Gigabit Physical Coding Sublayer (PCS) core implemented in Chisel. Developed as a Capstone design project at the University of Calgary (2026).
 
 ## Project Overview
+This repository contains the PCS (Physical Coding Sublayer). It implements the digital logic required to bridge the Media Access Control (MAC) layer's 64-bit XGMII interface with the Physical Medium Attachment (PMA) / SERDES interface used in high-speed 10GBASE-R architectures.
 
-The Ethernet datapath is composed of two major components:
+### Key Features
+- **Full-Duplex Operation:** Independent Transmit (TX) and Receive (RX) datapaths.
+- **64b/66b Line Coding:** Compresses XGMII control/data into 66-bit blocks with standard sync headers.
+- **Hardware Scrambling:** Parallel LFSR ($1 + x^{39} + x^{58}$) for DC balance and optimal transition density.
+- **Link Synchronization:** Dedicated hardware state machines for block lock, bitslip alignment, and High Bit Error Rate (BER) monitoring.
+- **Diagnostics:** Built-in hardware PRBS31 pseudo-random pattern generation and error checking.
 
-### MAC (Media Access Control)
-Handles Ethernet frame formatting, control characters, and the XGMII interface.
+## System Architecture
+The PCS acts as the primary orchestrator between the MAC and the physical transreceivers. For a complete Ethernet solution, this module is designed to interface with our [MAC Core](https://github.com/shreosidebnath/ClockDomainCrew-MAC)
 
-### PCS (Physical Coding Sublayer)
-Implements 64b/66b encoding, scrambling, synchronization, and decoding between the MAC and SERDES.
+![Architecture Diagram](modules/pcs/docs/user-guide/images/Architecture_Diagram.png)
 
-Together these modules form the digital portion of a 10G Ethernet network interface.
+## Documentation
+Technical specifications, state machine diagrams, and timing results are maintained in the LaTeX-generated User Guide.
+- User Guide Path: `modules/pcs/docs/user-guide/`
+- To Build: Ensure pdflatex is installed and run `make docs`. This should generate a `Pcs.pdf` file.
+
+## Getting Started
+### Dependencies
+- Hardware Construction: `sbt`, `Chisel3`, `CIRCT/FIRRTL`
+- Simulation: `Verilator`
+- Synthesis & Timing: `Yosys (v0.9+)` and `OpenSTA (v2.4.0+)`
+
+### Usage
+The project utilizes a top-level `Makefile` to wrap the Chisel/sbt workflow.
+
+The following table lists all the `Makefile` commands to run various actions.
+
+| Action | Command | Output Location/File |
+|---|---|---|
+Compile | `sbt compile` | `target/`
+Generate Verilog | `make verilog` | `modules/pcs/generated/`
+Run Synthesis | `make yosys` | `modules/pcs/generated/synTestCases/`
+Run Tests | `make test` | `modules/pcs/generated/test.rpt`
+Run Test Coverage | `make cov` | `modules/pcs/generated/scalaCoverage/`
+Build PDF Guide | `make docs` | `modules/pcs/docs/user-guide/Pcs.pdf`
+Full Regression | `make all` | `modules/pcs/generated/error.rpt`
+
+### Prerequisites for Tests
+
+#### Verilator (Required)
+
+This project requires **Verilator v5.044 or v5.045**, built using **Clang/clang++**.
+
+Some environments may run into Verilator PCH / build issues when Verilator is compiled with `g++` (e.g., missing file paths during compilation). Building Verilator with **Clang** resolves this reliably. Newer Verilator versions also improve support for the SystemVerilog golden model, but this project is validated against **v5.044** and **v5.045**.
+
+##### Build Verilator with Clang
+
+Clone Verilator, check out the appropriate release, then build/install:
+
+```bash
+export CC=clang
+export CXX=clang++
+
+autoconf
+./configure
+make          # this may take a while
+sudo make install
+```
+
+##### If you previously installed Verilator via Ubuntu packages, ensure the /usr/local/bin install takes precedence:
+
+```bash
+export PATH=/usr/local/bin:$PATH
+```
+
+#### Java (Required)
+
+##### Java JDK 17 is required to run and integrate with the blackbox implementation of the golden model.
+
+##### Switch your system Java to JDK 17
+```bash
+sudo update-alternatives --config java
+```
+
+Select the java-17 option.
+If java-17 is not listed, install JDK 17 first, then re-run the command above.
+
+## Repository Structure
+
+```
+ClockDomainCrew/
+├── build.sbt                   # Build tools
+├── Makefile                    # Chisel workflow file
+├── docs/                       # Project-level reports
+├── modules/
+│   └── pcs/                    # PCS module
+│       ├── docs/
+│       │   └── user-guide/     # Technical Specification Document
+│       ├── generated/          # Generated files
+│       ├── src/
+│       │   ├── main/           # Source code
+│       │   └── test/           # Testbench
+│       └── target/             # Scala output target
+├── Scapy-Tests/                # Loopback tests using Scapy 
+└── project/                    # sbt plugins and build configuration
+```
 
 ## License 
 ![License: CERN-OHL-S-2.0](https://img.shields.io/badge/license-CERN--OHL--S--2.0-blue)
@@ -57,141 +139,6 @@ University of Calgary – Schulich School of Engineering
 
 Project Sponsor:
 ChiselWare
-
-## System Architecture
-
-```
-+----------------------+
-|   Application Logic  |
-+----------+-----------+
-           │
-           ▼
-+----------------------+
-|         MAC          |
-|    (XGMII Interface) |
-+----------+-----------+
-           │
-           ▼
-+----------------------+
-|         PCS          |
-|    TX / RX Encoding  |
-+----------+-----------+
-           │
-           ▼
-+----------------------+
-|        SERDES        |
-|    Serializer / PHY  |
-+----------+-----------+
-           │
-           ▼
-        Ethernet Link
-```
-
-The MAC exchanges data with application logic while the PCS prepares the data for transmission over a high-speed serial physical interface.
-
-## Repository Structure
-
-```
-ClockDomainCrew/
-├── build.sbt
-├── Makefile               # Primary build + verification engine
-├── docs/                  # Project-level reports and documentation
-├── modules/
-│   └── pcs/               # PCS layer
-├── Scapy-Tests/           # Loopback tests using Scapy
-└── project/               # sbt plugins and build configuration
-```
-
-### modules/pcs
-
-Contains the Physical Coding Sublayer, including:
-- 64b/66b encoding and decoding
-- scrambling and descrambling
-- block synchronization
-- error detection
-
-
-## Reference Design 
-
-The implementation uses concepts and structure inspired by the open-source Ethernet core:
-- Ninja Taxi FPGA Ethernet Core
-
-This project was used as a golden reference for architecture and module organization.
-
-## Running the Project
-The primary way to interact with the project is through the provided Makefiles.
-
-### Building (via sbt)
-```bash
-# Compile module
-sbt compile
-# or alternatively
-sbt "project core" compile
-```
-
-### Testing
-
-Run the following command to execute the test suite for the PCS core:
-```bash
-make test
-```
-
-This is equivalent to running the following under the hood:
-```bash
-sbt "project core" test
-```
-
-and writes output to:
-```bash
-modules/pcs/generated/test.rpt
-```
-
-### Generating Verilog
-
-Generate SystemVerilog and synthesis collateral for the PCS core:
-```bash
-make verilog
-```
-
-This is equivalent to running the following under the hood:
-```bash
-sbt "project core" run
-```
-
-Entrypoint:
-```bash
-org.chiselware.cores.o01.t001.pcs.Main
-```
-
-
-### Full regression Flow
-Run everything end-to-end (cleans the directory, runs tests with coverage, generates Verilog, synthesizes with Yosys, builds documentation, and checks for errors):
-
-```bash
-make all
-```
-
-
-## Simulation
-
-Simulations can be executed using several supported Verilog simulators:
-- Verilator
-- Icarus Verilog
-- Synopsys VCS
-
-Run the included tests with:
-
-sbt
-project core
-test
-
-## Documentation
-
-Detailed documentation for each module can be found in the user guides:
-
-modules/pcs/docs/user-guide
-
-These guides describe the internal architecture, interfaces, and configuration parameters of each subsystem.
 
 ## Authors
 

@@ -22,7 +22,4 @@ The following items are known limitations or architectural constraints in the cu
     
     \item \textbf{Gearbox Sensitivity:} 
     The core does not implement an internal elastic buffer for rate matching between the 64-bit XGMII and 66-bit encoded blocks. The upstream MAC must strictly respect the \textit{txGbxReqStall} signal to prevent data loss or frame corruption.
-    
-    \item \textbf{Experimental 32-bit Support:} 
-    Although the \textit{dataW} parameter allows a 32-bit configuration, the 10GBASE-R protocol constants and internal LFSR matrices are optimized for 64-bit operation. 32-bit mode is considered experimental and may require additional cycle-alignment logic in the top-level integration.
 \end{itemize}
