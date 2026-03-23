@@ -20,7 +20,7 @@ own technology.
   \textbf{width}       &
   \textbf{Gates}         \\ \hline \hline
 
-  pcs\_default (Default)  & 
+  pcs\_default\textsuperscript{1}  & 
   64-bit              & 
   6,686               \\ \hline
 
@@ -56,7 +56,7 @@ open-source Nangate 45nm library.
   \textbf{Output Delay} &
   \textbf{Slack}          \\ \hline \hline
 
-  pcs\_default          &
+  pcs\_default\textsuperscript{1}          &
   6.4ns                 &
   50\% & 
   1.28ns & 
@@ -67,6 +67,7 @@ open-source Nangate 45nm library.
   \caption{Static Timing Analysis results}\label{table:timing}
 \end{longtable}
 
+\small{\textsuperscript{1} The default configuration is defined in the case class of \texttt{PcsParams.scala}.}
 
 \subsection{Multicycle Paths}
 None. The design is architected to complete all encoding, scrambling, and residue checks within a single clock cycle at 156.25 MHz.

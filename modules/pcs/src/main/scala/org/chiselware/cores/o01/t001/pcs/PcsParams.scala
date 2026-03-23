@@ -55,11 +55,13 @@ case class PcsParams(
 
 object PcsParams {
   val simConfigMap = LinkedHashMap[String, PcsParams](
-    "pcs_default" -> PcsParams(),
+    "config_default" -> PcsParams(),
+    "config_data32" -> PcsParams(dataW = 32, ctrlW = 4)
   )
 
   val synConfigMap = LinkedHashMap[String, PcsParams](
     "pcs_default" -> PcsParams(),
+    "pcs_data32" -> PcsParams(dataW = 32, ctrlW = 4)
   )
 
   val synConfigs = synConfigMap.keys.mkString(" ")
