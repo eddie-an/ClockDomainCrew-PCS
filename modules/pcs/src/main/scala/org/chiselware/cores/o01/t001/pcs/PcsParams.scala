@@ -56,12 +56,14 @@ case class PcsParams(
 object PcsParams {
   val simConfigMap = LinkedHashMap[String, PcsParams](
     "config_default" -> PcsParams(),
-    "config_data32" -> PcsParams(dataW = 32, ctrlW = 4)
+    "config_data32" -> PcsParams(dataW = 32, ctrlW = 4),
+    "config_gearbox_if_disable" -> PcsParams(txGbxIfEn = false, rxGbxIfEn = false)
   )
 
   val synConfigMap = LinkedHashMap[String, PcsParams](
     "pcs_default" -> PcsParams(),
-    "pcs_data32" -> PcsParams(dataW = 32, ctrlW = 4)
+    "pcs_data32" -> PcsParams(dataW = 32, ctrlW = 4),
+    "pcs_gearbox_if_disable" -> PcsParams(txGbxIfEn = false, rxGbxIfEn = false)
   )
 
   val synConfigs = synConfigMap.keys.mkString(" ")
